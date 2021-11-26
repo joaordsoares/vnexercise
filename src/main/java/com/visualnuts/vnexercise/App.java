@@ -2,7 +2,10 @@ package com.visualnuts.vnexercise;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -21,6 +24,7 @@ public class App {
 				+ "{\"country\":\"NL\", \"languages\":[\"nl\", \"fy\"]},"
 				+ "{\"country\":\"DE\", \"languages\":[\"de\"]},"
 				+ "{\"country\":\"ES\", \"languages\":[\"es\"]}]";
+		
 		//Deserialize
 		ObjectMapper mapper = new ObjectMapper();
 		
@@ -31,6 +35,7 @@ public class App {
 			System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLangAndDE(countries, new Lang("de")));
 			System.out.println("# Oficial Languages: " + App.getAllOfficialLanguages(countries));
 			System.out.println("Country with most languages: " + App.getCountryWithMostLangAndDE(countries,null));
+			System.out.println("Most common language: " + App.getMostCommonLanguage(countries));
 		} catch (JsonMappingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -43,6 +48,8 @@ public class App {
 		//System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLangAndDE(array));
 	}
 
+	//EXERCISE 2
+	
 	/*================================================================================
 	 * NAME: getNumCountries
 	 * PURPOSE: returns the number of countries in the world
@@ -90,19 +97,44 @@ public class App {
 
 	
 	/*================================================================================
-	 * NAME: getCountryWithMostLangAndDE
+	 * NAME: getMostCommonLanguage
 	 * PURPOSE: to find the most common official language(s), of all countries.
 	 *================================================================================*/
+	public static List<Lang> getMostCommonLanguage(List<Country> countries) {
+		List<Lang> languages = new ArrayList<Lang>();
+		HashMap<Lang, Integer> langCountMap = new HashMap<Lang, Integer>();
+		for(Country country : countries) {
+			for(Lang lang : country.getLanguages()) {
+				
+				if(!langCountMap.containsKey(lang))
+					langCountMap.put(lang, new Integer(1));
+				else {
+					langCountMap.merge(lang, 1, Integer::sum);
+				}
+					
+			}
+		}
+		languages.clear();
+		
+		int max = Collections.max(langCountMap.values());
+		for (Entry<Lang, Integer> entry : langCountMap.entrySet()) {
+		    if (entry.getValue()==max) {
+		        languages.add(entry.getKey());
+		    }
+		}
+		return languages;
+		
+//				languages.stream()
+//		        .collect(Collectors.groupingBy(w -> w, Collectors.counting()))
+//		        .entrySet()
+//		        .stream()
+//		        .max(Comparator.comparing(Entry::getValue))
+//		        .get()
+//		        .getKey();
+		
+	}
 	
-	
-	/*
-	- returns the number of countries in the world
-	- finds the country with the most official languages, where they officially speak German (de).
-	- that counts all the official languages spoken in the listed countries.
-	- to find the country with the highest number of official languages.
-	- to find the most common official language(s), of all countries.
-	 * 
-	 */
+	//EXERCISE 1
 	public static void printSequence(int start, int end) {
 		final long startTime = System.currentTimeMillis();
 
