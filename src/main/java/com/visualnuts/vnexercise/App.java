@@ -15,37 +15,34 @@ import com.visualnuts.vnexercise.model.Lang;
 
 public class App {
 	public static void main( String[] args ){
+		
+		//EXERCISE 1
 		int start = 1;
 		int end = 10000;
-		//App.printSequence(start, end);
+		App.printSequence(start, end);
 
-		String data = "[{\"country\":\"US\", \"languages\":[\"en\"]},"
+		//EXERCISE 2
+		String json = "[{\"country\":\"US\", \"languages\":[\"en\"]},"
 				+ "{\"country\":\"BE\", \"languages\":[\"nl\", \"fr\", \"de\"]},"
 				+ "{\"country\":\"NL\", \"languages\":[\"nl\", \"fy\"]},"
 				+ "{\"country\":\"DE\", \"languages\":[\"de\"]},"
 				+ "{\"country\":\"ES\", \"languages\":[\"es\"]}]";
 		
-		//Deserialize
-		ObjectMapper mapper = new ObjectMapper();
-		
 		try {
-			List<Country> countries = Arrays.asList(mapper.readValue(data, Country[].class));
+			ObjectMapper mapper = new ObjectMapper();
+			//Deserialize
+			List<Country> countries = Arrays.asList(mapper.readValue(json, Country[].class));
 			
 			System.out.println("# Countries: "+App.getNumCountries(countries));
 			System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLangAndDE(countries, new Lang("de")));
 			System.out.println("# Oficial Languages: " + App.getAllOfficialLanguages(countries));
-			System.out.println("Country with most languages: " + App.getCountryWithMostLangAndDE(countries,null));
+			System.out.println("Country with most languages: " + App.getCountryWithMostLangAndDE(countries, null));
 			System.out.println("Most common language: " + App.getMostCommonLanguage(countries));
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Error trying to map JSON");
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Error trying to process JSON");
 		}
-		
-		
-		//System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLangAndDE(array));
 	}
 
 	//EXERCISE 2
@@ -66,9 +63,10 @@ public class App {
 	public static Country getCountryWithMostLangAndDE(List<Country> countries, Lang containsLang) {
 		Country mostLangCountry = null;
 		for(Country country : countries) {
+			//first iteration
 			if(mostLangCountry == null)
 				mostLangCountry = country;
-			
+			//if a Lang was a parameter, check if it exists in the current country
 			if(containsLang != null && country.getLanguages().contains(containsLang)) {
 				if(country.getLanguages().size() > mostLangCountry.getLanguages().size())
 					mostLangCountry = country;
@@ -86,10 +84,12 @@ public class App {
 	 *================================================================================*/
 	public static long getAllOfficialLanguages(List<Country> countries){
 		List<Lang> languages = new ArrayList<Lang>();
+		//Create List with all languages of each country
 		for(Country country : countries) {
 			languages.addAll(country.getLanguages());
 		}
 		
+		//return the count of only distinct languages
 		return languages.stream().distinct().count();
 		//If we want to return wich languages are
 		//return languages.stream().distinct().collect(Collectors.toList());
@@ -101,11 +101,11 @@ public class App {
 	 * PURPOSE: to find the most common official language(s), of all countries.
 	 *================================================================================*/
 	public static List<Lang> getMostCommonLanguage(List<Country> countries) {
-		List<Lang> languages = new ArrayList<Lang>();
+		
+		//Fill hashmap with distinct languages and their respective count in the list
 		HashMap<Lang, Integer> langCountMap = new HashMap<Lang, Integer>();
 		for(Country country : countries) {
 			for(Lang lang : country.getLanguages()) {
-				
 				if(!langCountMap.containsKey(lang))
 					langCountMap.put(lang, new Integer(1));
 				else {
@@ -114,29 +114,20 @@ public class App {
 					
 			}
 		}
-		languages.clear();
-		
+		List<Lang> languages = new ArrayList<Lang>();
+		//Find the language with the highest value on the map
 		int max = Collections.max(langCountMap.values());
+		//Find the language(s) with max appearances
 		for (Entry<Lang, Integer> entry : langCountMap.entrySet()) {
 		    if (entry.getValue()==max) {
 		        languages.add(entry.getKey());
 		    }
 		}
 		return languages;
-		
-//				languages.stream()
-//		        .collect(Collectors.groupingBy(w -> w, Collectors.counting()))
-//		        .entrySet()
-//		        .stream()
-//		        .max(Comparator.comparing(Entry::getValue))
-//		        .get()
-//		        .getKey();
-		
 	}
 	
 	//EXERCISE 1
 	public static void printSequence(int start, int end) {
-		final long startTime = System.currentTimeMillis();
 
 		for(int i=start; i<=end; i++) {
 
@@ -145,13 +136,10 @@ public class App {
 				if(i%5 == 0)
 					System.out.print(" Nuts");
 				System.out.println();
-				continue;
 			}else if(i%5 == 0)
 				System.out.println("Nuts");
 			else
 				System.out.println(i);
 		}
-		final long endTime = System.currentTimeMillis();
-		System.out.println("Time: "+(endTime - startTime));
 	}
 }
