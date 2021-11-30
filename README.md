@@ -13,6 +13,7 @@ want to print the first 500 numbers, ...).
 
 Image you have a set of data in JSON, describing official languages spoken by countries, as
 such:
+```json
 [
 {
 country:"US",
@@ -35,6 +36,7 @@ country:"ES",
 languages: ["es"]
 }
 ]
+```
 Write a function in Java that:
 
 - returns the number of countries in the world
