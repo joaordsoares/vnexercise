@@ -15,7 +15,7 @@ import com.visualnuts.vnexercise.model.Lang;
 
 public class App {
 	public static void main( String[] args ){
-		
+
 		//EXERCISE 1
 		int start = 1;
 		int end = 10000;
@@ -24,29 +24,39 @@ public class App {
 		//EXERCISE 2
 		String json = "[{\"country\":\"US\", \"languages\":[\"en\"]},"
 				+ "{\"country\":\"BE\", \"languages\":[\"nl\", \"fr\", \"de\"]},"
+				+ "{\"country\":\"KK\", \"languages\":[\"nl\", \"fr\", \"fy\", \"es\"]},"
 				+ "{\"country\":\"NL\", \"languages\":[\"nl\", \"fy\"]},"
 				+ "{\"country\":\"DE\", \"languages\":[\"de\"]},"
 				+ "{\"country\":\"ES\", \"languages\":[\"es\"]}]";
-		
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			//Deserialize
-			List<Country> countries = Arrays.asList(mapper.readValue(json, Country[].class));
-			
-			System.out.println("# Countries: "+App.getNumCountries(countries));
-			System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLangAndDE(countries, new Lang("de")));
-			System.out.println("# Oficial Languages: " + App.getAllOfficialLanguages(countries));
-			System.out.println("Country with most languages: " + App.getCountryWithMostLangAndDE(countries, null));
-			System.out.println("Most common language: " + App.getMostCommonLanguage(countries));
-		} catch (JsonMappingException e) {
-			System.out.println("Error trying to map JSON");
-		} catch (JsonProcessingException e) {
-			System.out.println("Error trying to process JSON");
-		}
+
+		//Deserealize
+		List<Country> countries = App.deserialize(json);
+
+		System.out.println("# Countries: "+App.getNumCountries(countries));
+		System.out.println("Country with most languages including 'de': "+ App.getCountryWithMostLang(countries, new Lang("de")));
+		System.out.println("# Oficial Languages: " + App.getAllOfficialLanguages(countries));
+		System.out.println("Country with most languages: " + App.getCountryWithMostLang(countries, null));
+		System.out.println("Most common language: " + App.getMostCommonLanguage(countries));
+
+
 	}
 
 	//EXERCISE 2
-	
+	/*================================================================================
+	 * NAME: deserialize
+	 * PURPOSE: deserialize json
+	 *================================================================================*/
+	public static List<Country> deserialize(String json){
+		ObjectMapper mapper = new ObjectMapper();
+		List<Country> countries = null;
+		try {
+			countries = Arrays.asList(mapper.readValue(json, Country[].class));
+		} catch (JsonProcessingException e) {
+			System.out.println("Error trying to process JSON");
+		}
+		return countries;
+	}
+
 	/*================================================================================
 	 * NAME: getNumCountries
 	 * PURPOSE: returns the number of countries in the world
@@ -60,22 +70,25 @@ public class App {
 	 * 			filter the result only to countries where the language specified by param2
 	 * 			is spoken. If param2 is <null> the result is not filtered.
 	 *================================================================================*/
-	public static Country getCountryWithMostLangAndDE(List<Country> countries, Lang containsLang) {
+	public static Country getCountryWithMostLang(List<Country> countries, Lang containsLang) {
+		if(!isValidList(countries))
+			return null;
+
 		Country mostLangCountry = null;
 		for(Country country : countries) {
 			//first iteration
 			if(mostLangCountry == null)
 				mostLangCountry = country;
 			//if a Lang was a parameter, check if it exists in the current country
-			if(containsLang != null && country.getLanguages().contains(containsLang)) {
-				if(country.getLanguages().size() > mostLangCountry.getLanguages().size())
+			if(containsLang != null) {
+				if(country.getLanguages().contains(containsLang) && country.getLanguages().size() > mostLangCountry.getLanguages().size())
 					mostLangCountry = country;
 			}else {
 				if(country.getLanguages().size() > mostLangCountry.getLanguages().size())
 					mostLangCountry = country;
 			}
 		}
-		
+
 		return mostLangCountry;
 	}
 	/*================================================================================
@@ -83,25 +96,30 @@ public class App {
 	 * PURPOSE: that counts all the official languages spoken in the listed countries.
 	 *================================================================================*/
 	public static long getAllOfficialLanguages(List<Country> countries){
+		if(!isValidList(countries))
+			return 0;
+
 		List<Lang> languages = new ArrayList<Lang>();
 		//Create List with all languages of each country
 		for(Country country : countries) {
 			languages.addAll(country.getLanguages());
 		}
-		
+
 		//return the count of only distinct languages
 		return languages.stream().distinct().count();
 		//If we want to return wich languages are
 		//return languages.stream().distinct().collect(Collectors.toList());
 	}
 
-	
+
 	/*================================================================================
 	 * NAME: getMostCommonLanguage
 	 * PURPOSE: to find the most common official language(s), of all countries.
 	 *================================================================================*/
 	public static List<Lang> getMostCommonLanguage(List<Country> countries) {
-		
+		if(!isValidList(countries))
+			return null;
+
 		//Fill hashmap with distinct languages and their respective count in the list
 		HashMap<Lang, Integer> langCountMap = new HashMap<Lang, Integer>();
 		for(Country country : countries) {
@@ -111,7 +129,7 @@ public class App {
 				else {
 					langCountMap.merge(lang, 1, Integer::sum);
 				}
-					
+
 			}
 		}
 		List<Lang> languages = new ArrayList<Lang>();
@@ -119,13 +137,24 @@ public class App {
 		int max = Collections.max(langCountMap.values());
 		//Find the language(s) with max appearances
 		for (Entry<Lang, Integer> entry : langCountMap.entrySet()) {
-		    if (entry.getValue()==max) {
-		        languages.add(entry.getKey());
-		    }
+			if (entry.getValue()==max) {
+				languages.add(entry.getKey());
+			}
 		}
 		return languages;
 	}
-	
+
+	/*================================================================================
+	 * NAME: isValidList
+	 * PURPOSE: check if list is null or empty
+	 *================================================================================*/
+	public static boolean isValidList(List<Country> countries) {
+		if(countries == null || countries.isEmpty())
+			return false;
+
+		return true;
+	}
+
 	//EXERCISE 1
 	public static void printSequence(int start, int end) {
 
